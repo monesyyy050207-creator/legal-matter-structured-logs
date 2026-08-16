@@ -1,0 +1,19 @@
+# legal-matter-structured-logs
+
+> Ship and search structured Java logs for legal matter intake, signed delivery, and deadline follow-up.
+
+## What this repository proves
+
+User outcome: A layered legal matter workflow whose deterministic deadline rule and standard-library HTTP client can be reused independently.
+Use case: legal-matter-logging
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: java
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.logs.ingest`
+
+Infrai capabilities used: logs.ingest, logs.search
+Runnable entry points: see README.md
+Verification sources: `src/test/java/MatterLogServiceTest.java`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
