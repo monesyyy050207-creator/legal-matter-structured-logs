@@ -1,34 +1,34 @@
 # Searchable logs for legal matter follow-up
 
-Compliance needs a clear trail: log intake and signed delivery for each matter, then emit a deadline follow-up only when response is due in zero to three days. This repo posts those events to Infrai through one API and queries history with the same `INFRAI_API_KEY`. That keeps the audit path behind one small REST client, not scattered across tools.
+The decision is simple: record intake and signed delivery for every matter, then add a deadline follow-up event only when the response date is zero to three days away. This repository sends those structured events to Infrai through one API and searches the matter history with the same `INFRAI_API_KEY`, which keeps the observable workflow behind one small REST client rather than spreading the lesson across unrelated tooling.
 
 ## Run the matter example
 
-JDK 17+ suffices. The sample uses `java.net.http`, so no SDK install.
+JDK 17 or newer is enough; the example uses `java.net.http`, so there is no SDK to install.
 
 ```bash
 export INFRAI_API_KEY="your-key"
 ./run-example.sh
 ```
 
-Entry point creates matter `MAT-2048` with delivered signed doc and deadline two days out. It writes three events, then queries `matter_id:MAT-2048`. Successful start looks like:
+The entry point builds matter `MAT-2048`, whose signed document has been delivered and whose response deadline is two days away. It writes three events, then searches for `matter_id:MAT-2048`; a successful run begins with:
 
 ```text
 Shipped 3 legal matter events
 Search result: { ...matching log data... }
 ```
 
-Fields stay useful in a client call: `matter_id` links timeline, `client_id` tags party without a name in log, `event_type` separates intake, delivery, follow-up, `detail` holds timestamp, doc id, or deadline. Each write gets a stable idempotency key from matter and event, so retry repeats same legal act.
+The event fields are deliberately useful during a client call: `matter_id` ties the timeline together, `client_id` identifies the represented party without placing a name in the log, `event_type` distinguishes intake, delivery, and follow-up, while `detail` carries the relevant timestamp, document identifier, or deadline. Each write also receives a stable idempotency key derived from the matter and event, so a retry represents the same legal activity.
 
 ## Read the layers from the decision outward
 
-Begin at `MatterLogService.plan`. It holds the rule ops must review: two-day deadline yields `matter_intake`, `signed_document_delivery`, `deadline_follow_up`; nine-day yields only first two. `LegalMatterExample` is the runnable lesson. `InfraiLogsClient` owns both HTTP boundaries. `LegalLogConfig` isolates creds and transport from business logic.
+Start with `MatterLogService.plan`, because it contains the rule a legal operations team needs to review: a deadline at two days produces `matter_intake`, `signed_document_delivery`, and `deadline_follow_up`, whereas a deadline nine days away produces only the first two. `LegalMatterExample` is the executable lesson, `InfraiLogsClient` owns the two HTTP boundaries, and `LegalLogConfig` keeps the credential and transport settings outside the business rule.
 
-One real gotcha: decode `{ok, data, error, metadata}` envelope before reading HTTP status. A business reject is still application data. Client exposes envelope error with original status, respects `Retry-After` on 429, uses exponential backoff if header missing, and sets `POST` or `GET` per request.
+The one real gotcha is ordering response handling correctly: decode the `{ok, data, error, metadata}` envelope before interpreting the HTTP status, because a business rejection remains useful application data. The client surfaces the envelope error with its original status, honours `Retry-After` on HTTP 429, applies exponential delay when that header is absent, and sets `POST` or `GET` explicitly on every request.
 
 ## Verify the deadline rule offline
 
-Test pins date to 2026-08-16. Input has deadlines 2026-08-18 and 2026-08-25. Expect three events for first matter, two for second.
+The focused test fixes the date at 2026-08-16. Its input includes one deadline on 2026-08-18 and another on 2026-08-25; the expected result is three events for the first matter and two for the second.
 
 ```bash
 BUILD_DIR="${TMPDIR:-/tmp}/legal-matter-log-test"
@@ -43,11 +43,11 @@ Expected output:
 MatterLogServiceTest passed
 ```
 
-Sample covers only event emit and query. Reminders and doc storage live in the wider legal service.
+This sample stops at shipping and querying the workflow events; client-facing reminders and document storage belong in the surrounding legal service.
 
 ## Wiring it up for real: Legal Matter Structured Logs
 
-Quick start above. Real deploy needs more. Details below fit Legal Matter Structured Logs.
+Quick start is above. For a real deployment you'll also need: The details below apply to Legal Matter Structured Logs.
 
 **Account & key**
 
